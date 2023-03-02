@@ -18,4 +18,4 @@ rootProject.name = "LoopsEnginePOC"
 include ':app'
 include ':iolib'
 include ':parselib'
-include ':Android-lib'
+//include ':soundtouch'
