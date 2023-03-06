@@ -31,6 +31,10 @@ public:
     virtual ~OneShotSampleSource() {};
 
     virtual void mixAudio(float* outBuff, int numChannels, int32_t numFrames);
+
+    void setCurrentFrame(int frame);
+
+    int getCurrentFrame();
 };
 
 } // namespace iolib

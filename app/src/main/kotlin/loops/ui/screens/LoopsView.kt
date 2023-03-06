@@ -2,28 +2,31 @@ package loops.ui.screens
 
 import android.view.MotionEvent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -31,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import liv.eli.loops.R
 
 @Composable
@@ -46,33 +51,37 @@ fun LoopsView(viewModel: LoopsViewModel) {
         }
     }) { pd ->
         Surface(modifier = Modifier.padding(pd)) {
-            Row(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.weight(1f)) {
-                    SampleView(fileName = viewModel.fileOnIndex(0)) {
-                        if (it) viewModel.triggerDown(0) else viewModel.triggerUp(0)
-                    }
-                    SampleView(fileName = viewModel.fileOnIndex(1)) {
-                        if (it) viewModel.triggerDown(1) else viewModel.triggerUp(1)
-                    }
-                    SampleView(fileName = viewModel.fileOnIndex(2)) {
-                        if (it) viewModel.triggerDown(2) else viewModel.triggerUp(2)
-                    }
-                    SampleView(fileName = viewModel.fileOnIndex(3)) {
-                        if (it) viewModel.triggerDown(3) else viewModel.triggerUp(3)
-                    }
+            val currentMaster by remember {
+                viewModel.currentMaster
+            }
+            val masterFrame by remember {
+                viewModel.masterFrame
+            }
+            Column {
+                Column(modifier = Modifier.fillMaxWidth(), Arrangement.Center) {
+                    Text(text = "$currentMaster")
+                    Text(text = "$masterFrame")
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    SampleView(fileName = viewModel.fileOnIndex(4)) {
-                        if (it) viewModel.triggerDown(4) else viewModel.triggerUp(4)
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        for (index in 0..3) {
+                            SampleView(
+                                fileName = viewModel.fileNameForIndex(index),
+                                { viewModel.getMaxFrames(index) },
+                                { viewModel.getCurrentFrame(index) }) {
+                                if (it) viewModel.triggerDown(index) else viewModel.triggerUp(index)
+                            }
+                        }
                     }
-                    SampleView(fileName = viewModel.fileOnIndex(5)) {
-                        if (it) viewModel.triggerDown(5) else viewModel.triggerUp(5)
-                    }
-                    SampleView(fileName = viewModel.fileOnIndex(6)) {
-                        if (it) viewModel.triggerDown(6) else viewModel.triggerUp(6)
-                    }
-                    SampleView(fileName = viewModel.fileOnIndex(7)) {
-                        if (it) viewModel.triggerDown(7) else viewModel.triggerUp(7)
+                    Column(modifier = Modifier.weight(1f)) {
+                        for (index in 4..7) {
+                            SampleView(
+                                fileName = viewModel.fileNameForIndex(index),
+                                { viewModel.getMaxFrames(index) },
+                                { viewModel.getCurrentFrame(index) }) {
+                                if (it) viewModel.triggerDown(index) else viewModel.triggerUp(index)
+                            }
+                        }
                     }
                 }
             }
@@ -84,6 +93,8 @@ fun LoopsView(viewModel: LoopsViewModel) {
 @Composable
 fun SampleView(
     fileName: String,
+    getMaxFrames: () -> Int,
+    getCurrentFrame: () -> Int,
     onStateChange: (boolean: Boolean) -> Unit
 ) {
     var checkedStateToggle by remember {
@@ -92,7 +103,27 @@ fun SampleView(
     var checkedStateHold by remember {
         mutableStateOf(false)
     }
-    Column {
+    var currentFrame by remember {
+        mutableStateOf(0)
+    }
+
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(key1 = fileName, block = {
+        scope.launch {
+            while (true) {
+                // Fetch data
+                delay(100)
+                currentFrame = getCurrentFrame()
+            }
+        }
+    })
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(2.dp, color = Color.DarkGray)
+    ) {
         Text(text = fileName)
         Row {
             IconToggleButton(
@@ -143,5 +174,6 @@ fun SampleView(
                 )
             }
         }
+        Text(text = "F: $currentFrame / ${getMaxFrames()}")
     }
 }

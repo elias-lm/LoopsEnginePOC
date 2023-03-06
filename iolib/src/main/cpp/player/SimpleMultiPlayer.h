@@ -20,6 +20,7 @@
 #include <vector>
 
 #include <oboe/Oboe.h>
+#include <jni.h>
 
 #include "OneShotSampleSource.h"
 #include "SampleBuffer.h"
@@ -34,6 +35,10 @@ typedef unsigned char byte;     // an 8-bit unsigned value
 class SimpleMultiPlayer : public oboe::AudioStreamCallback  {
 public:
     SimpleMultiPlayer();
+
+    int32_t masterIndex = -1;  //index of the master sample
+    int32_t masterFrame = 0;   //current frame of the master sample
+    int32_t masterMaxFrames = 0; //max frames of the master sample
 
     // Inherited from oboe::AudioStreamCallback
     oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData,
@@ -75,6 +80,9 @@ public:
 
     void setGain(int index, float gain);
     float getGain(int index);
+
+    int getCurrentFrameForIndex(int i);
+    int getMaxFramesForIndex(int i);
 
 private:
     // Oboe Audio Stream

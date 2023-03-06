@@ -20,12 +20,13 @@
 #include <resampler/MultiChannelResampler.h>
 
 #include "wav/WavStreamReader.h"
+#include "PhaseVocoder.h"
 
 using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 
 namespace iolib {
 
-    void SampleBuffer::loadSampleData(parselib::WavStreamReader* reader) {
+    void SampleBuffer::loadSampleData(parselib::WavStreamReader *reader) {
         // Although we read this in, at this time we know a-priori that the data is mono
         mAudioProperties.channelCount = reader->getNumChannels();
         mAudioProperties.sampleRate = reader->getSampleRate();
@@ -49,7 +50,7 @@ namespace iolib {
     class ResampleBlock {
     public:
         int32_t mSampleRate;
-        float*  mBuffer;
+        float *mBuffer;
         int32_t mNumSamples;
     };
 
@@ -68,7 +69,7 @@ namespace iolib {
                 numChannels, // channel count
                 input.mSampleRate, // input sampleRate
                 output->mSampleRate, // output sampleRate
-                MultiChannelResampler::Quality::Medium); // conversion quality
+                MultiChannelResampler::Quality::Fastest); // conversion quality
 
         float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
         float *outputBuffer = new float[numOutFramesAllocated];    // multi-channel buffer to be filled
@@ -94,7 +95,7 @@ namespace iolib {
 
     void SampleBuffer::resampleData(int sampleRate) {
         if (mAudioProperties.sampleRate == sampleRate) {
-            // nothing to do
+//             nothing to do
             return;
         }
 
@@ -114,6 +115,10 @@ namespace iolib {
         mSampleData = outputBlock.mBuffer;
         mNumSamples = outputBlock.mNumSamples;
         mAudioProperties.sampleRate = outputBlock.mSampleRate;
+    }
+
+    void SampleBuffer::changeBPM(float rate) {
+        //TODO
     }
 
 } // namespace iolib

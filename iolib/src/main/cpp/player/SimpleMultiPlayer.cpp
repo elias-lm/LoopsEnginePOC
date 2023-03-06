@@ -49,10 +49,48 @@ namespace iolib {
         memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>(mChannelCount)
                              * sizeof(float));
 
-        // OneShotSampleSource* sources = mSampleSources.get();
+        //find the master sample
         for (int32_t index = 0; index < mNumSampleBuffers; index++) {
+//        }
+
+            if (masterIndex > -1) {
+                masterFrame = mSampleSources[masterIndex]->getCurrentFrame();
+                masterMaxFrames = mSampleSources[masterIndex]->getMaxFrames();
+            }
+
+            //mix all the samples
             if (mSampleSources[index]->isPlaying()) {
+                //if the sample is not the master, sync it to the master's current frame
+                if (index != masterIndex) {
+                    //if the sample's current frame is less than the master's, find the relevant frame using modulo
+                    if (mSampleSources[index]->getCurrentFrame() < masterFrame) {
+                        mSampleSources[index]->setCurrentFrame(
+                                masterFrame % mSampleSources[index]->getMaxFrames());
+                    } else {
+                        //if the sample's current frame is greater than the master's, don't reset it
+                        if (mSampleSources[index]->getCurrentFrame() > masterFrame) {
+                            mSampleSources[index]->setCurrentFrame(
+                                    mSampleSources[index]->getCurrentFrame());
+                        } else {
+                            mSampleSources[index]->setCurrentFrame(masterFrame);
+                        }
+                    }
+                }
                 mSampleSources[index]->mixAudio((float *) audioData, mChannelCount, numFrames);
+            } else {
+                //if the sample is paused, reset its current frame
+                mSampleSources[index]->setCurrentFrame(0);
+                if (index == masterIndex) {
+                    masterIndex = -1;
+                    masterMaxFrames = 0;
+                }
+            }
+
+
+            if (mSampleSources[index]->isPlaying()) {
+                if (mSampleSources[index]->getMaxFrames() > masterMaxFrames) {
+                    masterIndex = index;
+                }
             }
         }
 
@@ -82,7 +120,7 @@ namespace iolib {
         builder.setCallback(this);
         builder.setPerformanceMode(PerformanceMode::LowLatency);
         builder.setSharingMode(SharingMode::Exclusive);
-        builder.setSampleRateConversionQuality(SampleRateConversionQuality::Medium);
+        builder.setSampleRateConversionQuality(SampleRateConversionQuality::Fastest);
 
         Result result = builder.openStream(mAudioStream);
         if (result != Result::OK) {
@@ -141,6 +179,7 @@ namespace iolib {
 
     void SimpleMultiPlayer::addSampleSource(SampleSource *source, SampleBuffer *buffer) {
         buffer->resampleData(mSampleRate);
+        buffer->changeBPM(0.7f);
 
         mSampleBuffers.push_back(buffer);
         mSampleSources.push_back(source);
@@ -194,6 +233,14 @@ namespace iolib {
 
     float SimpleMultiPlayer::getGain(int index) {
         return mSampleSources[index]->getGain();
+    }
+
+    int SimpleMultiPlayer::getCurrentFrameForIndex(int i) {
+        return mSampleSources[i]->getCurrentFrame();
+    }
+
+    int SimpleMultiPlayer::getMaxFramesForIndex(int i) {
+        return mSampleSources[i]->getMaxFrames();
     }
 
 }

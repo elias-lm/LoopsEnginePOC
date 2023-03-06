@@ -22,40 +22,51 @@
 
 namespace iolib {
 
-void OneShotSampleSource::mixAudio(float* outBuff, int numChannels, int32_t numFrames) {
-    int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
-    int32_t numWriteFrames = mIsPlaying
-                         ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
-                         : 0;
+    void OneShotSampleSource::mixAudio(float *outBuff, int numChannels, int32_t numFrames) {
+        int32_t numSampleFrames = mSampleBuffer->getNumSampleFrames();
+        int32_t numWriteFrames = mIsPlaying
+                                 ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
+                                 : 0;
 
-    if (numWriteFrames != 0) {
-        // Mix in the samples
+        //Change BPM of mSampleBuffer to 40BPM
+//        mSampleBuffer->setBPM(40);
 
-        // investigate unrolling these loops...
-        const float* data  = mSampleBuffer->getSampleData();
-        if (numChannels == 1) {
-            // MONO output
-            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                outBuff[frameIndex] += data[mCurFrameIndex++] * mGain;
+        if (numWriteFrames != 0) {
+            // Mix in the samples
+
+            // investigate unrolling these loops...
+            const float *data = mSampleBuffer->getSampleData();
+            if (numChannels == 1) {
+                // MONO output
+                for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                    outBuff[frameIndex] += data[mCurFrameIndex++] * mGain;
+                }
+            } else if (numChannels == 2) {
+                // STEREO output
+                int dstSampleIndex = 0;
+                for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
+                    outBuff[dstSampleIndex++] += data[mCurFrameIndex] * mLeftGain;
+                    outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * mRightGain;
+                }
             }
-        } else if (numChannels == 2) {
-            // STEREO output
-            int dstSampleIndex = 0;
-            for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                outBuff[dstSampleIndex++] += data[mCurFrameIndex] * mLeftGain;
-                outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * mRightGain;
+
+            if (mCurFrameIndex >= numSampleFrames) {
+//                mIsPlaying = false;
+                mCurFrameIndex = 0;
             }
         }
 
-        if (mCurFrameIndex >= numSampleFrames) {
-            mIsPlaying = false;
-//            mCurFrameIndex = 0;
-        }
+        // silence
+        // no need as the output buffer would need to have been filled with silence
+        // to be mixed into
     }
 
-    // silence
-    // no need as the output buffer would need to have been filled with silence
-    // to be mixed into
-}
+    void OneShotSampleSource::setCurrentFrame(int frame) {
+        mCurFrameIndex = frame;
+    }
+
+    int OneShotSampleSource::getCurrentFrame() {
+        return mCurFrameIndex;
+    }
 
 } // namespace wavlib

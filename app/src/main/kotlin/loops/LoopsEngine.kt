@@ -12,7 +12,7 @@ class LoopsEngine(val assetMgr: AssetManager) {
     }
 
     fun setupAudioStream() {
-        setupAudioStreamNative(1)
+        setupAudioStreamNative(2)
     }
 
     fun startAudioStream() {
@@ -27,35 +27,35 @@ class LoopsEngine(val assetMgr: AssetManager) {
         var allAssetsCorrect = true
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBand/115_G_Bass_1.wav"
+            "SpacePiretsBand/SpacePiretsBand Drums 1.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBand/115_G_Bass_2.wav"
+            "SpacePiretsBand/SpacePiretsBand Drums 2.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Bass_3.wav"
+            "SpacePiretsBand/SpacePiretsBand Pad 1.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Pad_1.wav"
+            "SpacePiretsBand/SpacePiretsBand Pad 2.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Pad_2.wav"
+            "SpacePiretsBand/SpacePiretsBand Pad 3.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Pad_3.wav"
+            "SpacePiretsBand/SpacePiretsBand PERC 1.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Vocal_1.wav"
+            "SpacePiretsBand/SpacePiretsBand PERC 2.wav"
         ) && allAssetsCorrect
         allAssetsCorrect = loadWavAsset(
             assetMgr,
-            "SpaceGypsiesBandMono/115_G_Vocal_2.wav"
+            "SpacePiretsBand/SpacePiretsBand PERC 3.wav"
         ) && allAssetsCorrect
 
         return allAssetsCorrect
@@ -101,4 +101,10 @@ class LoopsEngine(val assetMgr: AssetManager) {
     external fun clearOutputReset()
 
     external fun restartStream()
+
+    external fun getCurrentFrameForIndex(index: Int) : Int
+    external fun getMaxFramesForIndex(index: Int) : Int
+
+    external fun getCurrentMasterIndex() : Int
+    external fun getMasterFrame() : Int
 }

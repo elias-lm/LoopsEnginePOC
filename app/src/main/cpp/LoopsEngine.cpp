@@ -83,7 +83,7 @@ JNIEXPORT jboolean JNICALL
 Java_loops_LoopsEngine_loadWavAssetNative(JNIEnv *env, jobject thiz,
                                           jobject jAssetManager,
                                           jstring jWavFileName) {
-    
+
     const char *wavFileName = env->GetStringUTFChars(jWavFileName, nullptr);
     AAssetManager *assetManager = AAssetManager_fromJava(env, jAssetManager);
     AAsset *asset = AAssetManager_open(assetManager, wavFileName, AASSET_MODE_BUFFER);
@@ -103,6 +103,7 @@ Java_loops_LoopsEngine_loadWavAssetNative(JNIEnv *env, jobject thiz,
 
     auto *sampleBuffer = new iolib::SampleBuffer();
     sampleBuffer->loadSampleData(reader);
+//    sampleBuffer->changeBPM(0.4f);
     auto *source = new iolib::OneShotSampleSource(sampleBuffer, 0);
 
     sDTPlayer.addSampleSource(source, sampleBuffer);
@@ -110,6 +111,7 @@ Java_loops_LoopsEngine_loadWavAssetNative(JNIEnv *env, jobject thiz,
     AAsset_close(asset);
 
     sources[sourcesIndex++] = wavFileName;
+
     return isFormatValid;
 }
 
@@ -190,6 +192,28 @@ JNIEXPORT jfloat JNICALL Java_loops_LoopsEngine_getGain(
         JNIEnv *env, jobject thiz, jint index) {
     return sDTPlayer.getGain(index);
 }
+
+JNIEXPORT int JNICALL Java_loops_LoopsEngine_getCurrentFrameForIndex(
+        JNIEnv *env, jobject thiz, jint index) {
+    return sDTPlayer.getCurrentFrameForIndex(index);
+}
+
+JNIEXPORT jint JNICALL
+Java_loops_LoopsEngine_getMaxFramesForIndex(JNIEnv *env, jobject thiz, jint index) {
+    return sDTPlayer.getMaxFramesForIndex(index);
+}
+
+JNIEXPORT jint JNICALL
+Java_loops_LoopsEngine_getCurrentMasterIndex(JNIEnv *env, jobject thiz) {
+    return sDTPlayer.masterIndex;
+}
+
+JNIEXPORT jint JNICALL
+Java_loops_LoopsEngine_getMasterFrame(JNIEnv *env, jobject thiz) {
+    return sDTPlayer.masterFrame;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
@@ -204,4 +228,3 @@ void MyPrintFunc(const char *str) {
             "MYTAG *** ",
             "%s", newStr);
 }
-

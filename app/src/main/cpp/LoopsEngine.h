@@ -7,12 +7,6 @@
 
 extern "C" {
 
-JNIEXPORT void JNICALL
-Java_loops_LoopsEngine_startEngine(JNIEnv *env, jobject thiz, jobject jAssetManager,
-                                   jstring jWavFileName);
-JNIEXPORT void JNICALL
-Java_loops_LoopsEngine_play(JNIEnv *env, jobject thiz);
-
 }
 
 

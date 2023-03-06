@@ -45,6 +45,8 @@ public:
     float* getSampleData() { return mSampleData; }
     int32_t getNumSampleFrames() { return mNumSamples; }
 
+    void changeBPM(float amount);
+
 protected:
     AudioProperties mAudioProperties;
 
