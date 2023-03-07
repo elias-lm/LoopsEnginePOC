@@ -28,9 +28,6 @@ namespace iolib {
                                  ? std::min(numFrames, numSampleFrames - mCurFrameIndex)
                                  : 0;
 
-        //Change BPM of mSampleBuffer to 40BPM
-//        mSampleBuffer->setBPM(40);
-
         if (numWriteFrames != 0) {
             // Mix in the samples
 
@@ -45,7 +42,7 @@ namespace iolib {
                 // STEREO output
                 int dstSampleIndex = 0;
                 for (int32_t frameIndex = 0; frameIndex < numWriteFrames; frameIndex++) {
-                    outBuff[dstSampleIndex++] += data[mCurFrameIndex] * mLeftGain;
+                    outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * mLeftGain;
                     outBuff[dstSampleIndex++] += data[mCurFrameIndex++] * mRightGain;
                 }
             }

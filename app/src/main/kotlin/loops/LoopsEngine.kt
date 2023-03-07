@@ -1,9 +1,10 @@
 package loops
 
 import android.content.res.AssetManager
+import android.media.AudioManager
 import java.io.IOException
 
-class LoopsEngine(val assetMgr: AssetManager) {
+class LoopsEngine(val assetMgr: AssetManager, val audioMgr: AudioManager) {
 
     companion object {
         init {
@@ -12,7 +13,12 @@ class LoopsEngine(val assetMgr: AssetManager) {
     }
 
     fun setupAudioStream() {
-        setupAudioStreamNative(2)
+        val sampleRateStr = audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+        val defaultSampleRate = sampleRateStr.toInt()
+        val framesPerBurstStr =
+            audioMgr.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
+        val defaultFramesPerBurst = framesPerBurstStr.toInt()
+        setupAudioStreamNative(2, defaultSampleRate, defaultFramesPerBurst)
     }
 
     fun startAudioStream() {
@@ -22,6 +28,43 @@ class LoopsEngine(val assetMgr: AssetManager) {
     fun teardownAudioStream() {
         teardownAudioStreamNative()
     }
+//    fun loadWavAssets(): Boolean {
+//        var allAssetsCorrect = true
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Pad_1.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Pad_2.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Pad_3.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Bass_1.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Bass_1.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Bass_3.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBandMono/115_G_Vocal_1.wav"
+//        ) && allAssetsCorrect
+//        allAssetsCorrect = loadWavAsset(
+//            assetMgr,
+//            "SpaceGypsiesBand/115_G_Vocal_2.wav"
+//        ) && allAssetsCorrect
+//
+//        return allAssetsCorrect
+//    }
 
     fun loadWavAssets(): Boolean {
         var allAssetsCorrect = true
@@ -78,7 +121,12 @@ class LoopsEngine(val assetMgr: AssetManager) {
         return returnVal
     }
 
-    private external fun setupAudioStreamNative(numChannels: Int)
+    private external fun setupAudioStreamNative(
+        numChannels: Int,
+        sampleRate: Int,
+        framesPerBurst: Int
+    )
+
     private external fun startAudioStreamNative()
     private external fun teardownAudioStreamNative()
 
@@ -102,9 +150,9 @@ class LoopsEngine(val assetMgr: AssetManager) {
 
     external fun restartStream()
 
-    external fun getCurrentFrameForIndex(index: Int) : Int
-    external fun getMaxFramesForIndex(index: Int) : Int
+    external fun getCurrentFrameForIndex(index: Int): Int
+    external fun getMaxFramesForIndex(index: Int): Int
 
-    external fun getCurrentMasterIndex() : Int
-    external fun getMasterFrame() : Int
+    external fun getCurrentMasterIndex(): Int
+    external fun getMasterFrame(): Int
 }

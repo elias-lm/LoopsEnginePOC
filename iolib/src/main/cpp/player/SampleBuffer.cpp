@@ -27,7 +27,6 @@ using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
 namespace iolib {
 
     void SampleBuffer::loadSampleData(parselib::WavStreamReader *reader) {
-        // Although we read this in, at this time we know a-priori that the data is mono
         mAudioProperties.channelCount = reader->getNumChannels();
         mAudioProperties.sampleRate = reader->getSampleRate();
 
@@ -54,13 +53,14 @@ namespace iolib {
         int32_t mNumSamples;
     };
 
-    void resampleData(const ResampleBlock& input, ResampleBlock* output, int numChannels) {
+    void resampleData(const ResampleBlock &input, ResampleBlock *output, int numChannels) {
         // Calculate output buffer size
         double temp =
-                ((double)input.mNumSamples * (double)output->mSampleRate) / (double)input.mSampleRate;
+                ((double) input.mNumSamples * (double) output->mSampleRate) /
+                (double) input.mSampleRate;
 
         // round up
-        int32_t numOutFramesAllocated = (int32_t)(temp + 0.5);
+        int32_t numOutFramesAllocated = (int32_t) (temp + 0.5);
         // We iterate thousands of times through the loop. Roundoff error could accumulate
         // so add a few more frames for padding
         numOutFramesAllocated += 8;
@@ -69,7 +69,7 @@ namespace iolib {
                 numChannels, // channel count
                 input.mSampleRate, // input sampleRate
                 output->mSampleRate, // output sampleRate
-                MultiChannelResampler::Quality::Fastest); // conversion quality
+                MultiChannelResampler::Quality::Best); // conversion quality
 
         float *inputBuffer = input.mBuffer;;     // multi-channel buffer to be consumed
         float *outputBuffer = new float[numOutFramesAllocated];    // multi-channel buffer to be filled
@@ -78,7 +78,7 @@ namespace iolib {
         int numOutputSamples = 0;
         int inputSamplesLeft = input.mNumSamples;
         while ((inputSamplesLeft > 0) && (numOutputSamples < numOutFramesAllocated)) {
-            if(resampler->isWriteNeeded()) {
+            if (resampler->isWriteNeeded()) {
                 resampler->writeNextFrame(inputBuffer);
                 inputBuffer += numChannels;
                 inputSamplesLeft -= numChannels;

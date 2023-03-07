@@ -49,11 +49,11 @@ static int sourcesIndex = 0;
  * Native (JNI) implementation of DrumPlayer.setupAudioStreamNative()
  */
 JNIEXPORT void JNICALL Java_loops_LoopsEngine_setupAudioStreamNative(
-        JNIEnv *env, jobject, jint numChannels) {
+        JNIEnv *env, jobject, jint numChannels, jint sampleRate, jint framesPerBurst) {
     __android_log_print(ANDROID_LOG_INFO, TAG, "%s", "init()");
 
     // we know in this case that the sample buffers are all 1-channel, 41K
-    sDTPlayer.setupAudioStream(numChannels);
+    sDTPlayer.setupAudioStream(numChannels, sampleRate, framesPerBurst);
 }
 
 JNIEXPORT void JNICALL

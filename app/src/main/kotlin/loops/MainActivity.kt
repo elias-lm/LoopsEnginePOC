@@ -3,8 +3,10 @@ package loops
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.lifecycleScope
 import com.microsoft.snippet.Snippet
 import com.microsoft.snippet.Snippet.MeasuredExecutionPath
+import kotlinx.coroutines.launch
 import loops.ui.screens.RootScreen
 import loops.ui.screens.RootScreenViewModel
 import org.koin.android.ext.android.inject
@@ -28,10 +30,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        Snippet.capture {
-            loopsEngine.setupAudioStream()
-            loopsEngine.loadWavAssets()
-            loopsEngine.startAudioStream()
+        lifecycleScope.launch {
+            Snippet.capture {
+                loopsEngine.setupAudioStream()
+                loopsEngine.loadWavAssets()
+                loopsEngine.startAudioStream()
+            }
         }
     }
 

@@ -118,12 +118,10 @@ fun SampleView(
         }
     })
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .border(2.dp, color = Color.DarkGray)
-    ) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)
+        .border(2.dp, color = Color.DarkGray)) {
         Text(text = fileName)
         Row {
             IconToggleButton(

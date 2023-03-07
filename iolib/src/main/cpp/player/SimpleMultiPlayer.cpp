@@ -83,6 +83,7 @@ namespace iolib {
                 if (index == masterIndex) {
                     masterIndex = -1;
                     masterMaxFrames = 0;
+                    masterFrame = 0;
                 }
             }
 
@@ -118,9 +119,11 @@ namespace iolib {
         builder.setChannelCount(mChannelCount);
         // we will resample source data to device rate, so take default sample rate
         builder.setCallback(this);
-        builder.setPerformanceMode(PerformanceMode::LowLatency);
+        builder.setPerformanceMode(PerformanceMode::None);
         builder.setSharingMode(SharingMode::Exclusive);
-        builder.setSampleRateConversionQuality(SampleRateConversionQuality::Fastest);
+        builder.setFormatConversionAllowed(true);
+//        builder.setFormat(oboe::AudioFormat::Float);
+        builder.setSampleRateConversionQuality(SampleRateConversionQuality::Best);
 
         Result result = builder.openStream(mAudioStream);
         if (result != Result::OK) {
@@ -134,8 +137,7 @@ namespace iolib {
         // Reduce stream latency by setting the buffer size to a multiple of the burst size
         // Note: this will fail with ErrorUnimplemented if we are using a callback with OpenSL ES
         // See oboe::AudioStreamBuffered::setBufferSizeInFrames
-        result = mAudioStream->setBufferSizeInFrames(
-                mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
         if (result != Result::OK) {
             __android_log_print(
                     ANDROID_LOG_WARN,
@@ -160,9 +162,14 @@ namespace iolib {
         return true;
     }
 
-    void SimpleMultiPlayer::setupAudioStream(int32_t channelCount) {
+    void
+    SimpleMultiPlayer::setupAudioStream(jint channelCount, jint sampleRate, jint framesPerBurst) {
         __android_log_print(ANDROID_LOG_INFO, TAG, "setupAudioStream()");
         mChannelCount = channelCount;
+        mSampleRate = sampleRate;
+        oboe::DefaultStreamValues::SampleRate = (int32_t) sampleRate;
+        oboe::DefaultStreamValues::FramesPerBurst = (int32_t) framesPerBurst;
+        oboe::DefaultStreamValues::ChannelCount = mChannelCount;
 
         openStream();
     }

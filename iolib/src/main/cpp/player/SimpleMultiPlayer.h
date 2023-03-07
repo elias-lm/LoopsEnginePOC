@@ -27,78 +27,88 @@
 
 namespace iolib {
 
-typedef unsigned char byte;     // an 8-bit unsigned value
+    typedef unsigned char byte;     // an 8-bit unsigned value
 
 /**
  * A simple streaming player for multiple SampleBuffers.
  */
-class SimpleMultiPlayer : public oboe::AudioStreamCallback  {
-public:
-    SimpleMultiPlayer();
+    class SimpleMultiPlayer : public oboe::AudioStreamCallback {
+    public:
+        SimpleMultiPlayer();
 
-    int32_t masterIndex = -1;  //index of the master sample
-    int32_t masterFrame = 0;   //current frame of the master sample
-    int32_t masterMaxFrames = 0; //max frames of the master sample
+        int32_t masterIndex = -1;  //index of the master sample
+        int32_t masterFrame = 0;   //current frame of the master sample
+        int32_t masterMaxFrames = 0; //max frames of the master sample
 
-    // Inherited from oboe::AudioStreamCallback
-    oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData,
-            int32_t numFrames) override;
-    virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
-    virtual void onErrorBeforeClose(oboe::AudioStream * oboeStream, oboe::Result error) override;
+        // Inherited from oboe::AudioStreamCallback
+        oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData,
+                                              int32_t numFrames) override;
 
-    void setupAudioStream(int32_t channelCount);
-    void teardownAudioStream();
+        virtual void onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 
-    bool openStream();
-    bool startStream();
+        virtual void onErrorBeforeClose(oboe::AudioStream *oboeStream, oboe::Result error) override;
 
-    int getSampleRate() { return mSampleRate; }
+        void setupAudioStream(jint channelCount, jint sampleRate, jint framesPerBurst);
 
-    // Wave Sample Loading...
-    /**
-     * Adds the SampleSource/Samplebuffer pair to the list of source channels.
-     * Transfers ownership of those objects so that they can be deleted/unloaded.
-     * The indexes associated with each source channel is the order in which they
-     * are added.
-     */
-    void addSampleSource(SampleSource* source, SampleBuffer* buffer);
-    /**
-     * Deallocates and deletes all added source/buffer (see addSampleSource()).
-     */
-    void unloadSampleData();
+        void teardownAudioStream();
 
-    void triggerDown(int32_t index);
-    void triggerUp(int32_t index);
+        bool openStream();
 
-    void resetAll();
+        bool startStream();
 
-    bool getOutputReset() { return mOutputReset; }
-    void clearOutputReset() { mOutputReset = false; }
+        int getSampleRate() { return mSampleRate; }
 
-    void setPan(int index, float pan);
-    float getPan(int index);
+        // Wave Sample Loading...
+        /**
+         * Adds the SampleSource/Samplebuffer pair to the list of source channels.
+         * Transfers ownership of those objects so that they can be deleted/unloaded.
+         * The indexes associated with each source channel is the order in which they
+         * are added.
+         */
+        void addSampleSource(SampleSource *source, SampleBuffer *buffer);
 
-    void setGain(int index, float gain);
-    float getGain(int index);
+        /**
+         * Deallocates and deletes all added source/buffer (see addSampleSource()).
+         */
+        void unloadSampleData();
 
-    int getCurrentFrameForIndex(int i);
-    int getMaxFramesForIndex(int i);
+        void triggerDown(int32_t index);
 
-private:
-    // Oboe Audio Stream
-    std::shared_ptr<oboe::AudioStream> mAudioStream;
+        void triggerUp(int32_t index);
 
-    // Playback Audio attributes
-    int32_t mChannelCount;
-    int32_t mSampleRate;
+        void resetAll();
 
-    // Sample Data
-    int32_t mNumSampleBuffers;
-    std::vector<SampleBuffer*>  mSampleBuffers;
-    std::vector<SampleSource*>  mSampleSources;
+        bool getOutputReset() { return mOutputReset; }
 
-    bool    mOutputReset;
-};
+        void clearOutputReset() { mOutputReset = false; }
+
+        void setPan(int index, float pan);
+
+        float getPan(int index);
+
+        void setGain(int index, float gain);
+
+        float getGain(int index);
+
+        int getCurrentFrameForIndex(int i);
+
+        int getMaxFramesForIndex(int i);
+
+    private:
+        // Oboe Audio Stream
+        std::shared_ptr<oboe::AudioStream> mAudioStream;
+
+        // Playback Audio attributes
+        int32_t mChannelCount;
+        int32_t mSampleRate;
+
+        // Sample Data
+        int32_t mNumSampleBuffers;
+        std::vector<SampleBuffer *> mSampleBuffers;
+        std::vector<SampleSource *> mSampleSources;
+
+        bool mOutputReset;
+    };
 
 }
 #endif //_PLAYER_SIMIPLEMULTIPLAYER_H_

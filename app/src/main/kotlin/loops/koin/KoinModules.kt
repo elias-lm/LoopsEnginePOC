@@ -28,7 +28,7 @@ val services = module {
     single { androidContext().getSystemService(AudioManager::class.java) }
     single { androidContext().assets }
 
-    single { LoopsEngine(androidContext().assets) }
+    single { LoopsEngine(androidContext().assets, get()) }
 }
 
 val reposModule = module {
