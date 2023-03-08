@@ -39,6 +39,7 @@ namespace iolib {
         int32_t masterIndex = -1;  //index of the master sample
         int32_t masterFrame = 0;   //current frame of the master sample
         int32_t masterMaxFrames = 0; //max frames of the master sample
+        std::map<int, bool> sampleState;
 
         // Inherited from oboe::AudioStreamCallback
         oboe::DataCallbackResult onAudioReady(oboe::AudioStream *oboeStream, void *audioData,

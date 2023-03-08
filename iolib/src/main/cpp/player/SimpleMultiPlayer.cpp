@@ -29,6 +29,7 @@ static const char *TAG = "SimpleMultiPlayer";
 using namespace oboe;
 using namespace parselib;
 
+
 namespace iolib {
 
     constexpr int32_t kBufferSizeInBursts = 2; // Use 2 bursts as the buffer size (double buffer)
@@ -49,37 +50,35 @@ namespace iolib {
         memset(audioData, 0, static_cast<size_t>(numFrames) * static_cast<size_t>(mChannelCount)
                              * sizeof(float));
 
-        //find the master sample
-        for (int32_t index = 0; index < mNumSampleBuffers; index++) {
-//        }
+        for (auto index = 0; index < mNumSampleBuffers; index++) {
 
-            if (masterIndex > -1) {
-                masterFrame = mSampleSources[masterIndex]->getCurrentFrame();
-                masterMaxFrames = mSampleSources[masterIndex]->getMaxFrames();
+            SampleSource *&pSource = mSampleSources[index];
+
+            if (masterIndex == index) {
+                masterFrame = pSource->getCurrentFrame();
+                masterMaxFrames = pSource->getMaxFrames();
             }
 
             //mix all the samples
-            if (mSampleSources[index]->isPlaying()) {
-                //if the sample is not the master, sync it to the master's current frame
-                if (index != masterIndex) {
-                    //if the sample's current frame is less than the master's, find the relevant frame using modulo
-                    if (mSampleSources[index]->getCurrentFrame() < masterFrame) {
-                        mSampleSources[index]->setCurrentFrame(
-                                masterFrame % mSampleSources[index]->getMaxFrames());
-                    } else {
-                        //if the sample's current frame is greater than the master's, don't reset it
-                        if (mSampleSources[index]->getCurrentFrame() > masterFrame) {
-                            mSampleSources[index]->setCurrentFrame(
-                                    mSampleSources[index]->getCurrentFrame());
+            if (pSource->isPlaying()) {
+                if (!sampleState[index]) {
+                    sampleState[index] = true;
+
+                    if (index != masterIndex) {
+                        if (pSource->getMaxFrames() < masterFrame) {
+                            pSource->setCurrentFrame(masterFrame % pSource->getMaxFrames());
                         } else {
-                            mSampleSources[index]->setCurrentFrame(masterFrame);
+                            pSource->setCurrentFrame(masterFrame);
                         }
                     }
                 }
-                mSampleSources[index]->mixAudio((float *) audioData, mChannelCount, numFrames);
+
+                pSource->mixAudio((float *) audioData, mChannelCount, numFrames);
+
             } else {
                 //if the sample is paused, reset its current frame
-                mSampleSources[index]->setCurrentFrame(0);
+                sampleState[index] = false;
+                pSource->setCurrentFrame(0);
                 if (index == masterIndex) {
                     masterIndex = -1;
                     masterMaxFrames = 0;
@@ -87,9 +86,8 @@ namespace iolib {
                 }
             }
 
-
-            if (mSampleSources[index]->isPlaying()) {
-                if (mSampleSources[index]->getMaxFrames() > masterMaxFrames) {
+            if (pSource->isPlaying()) {
+                if (pSource->getMaxFrames() > masterMaxFrames) {
                     masterIndex = index;
                 }
             }
@@ -122,7 +120,6 @@ namespace iolib {
         builder.setPerformanceMode(PerformanceMode::None);
         builder.setSharingMode(SharingMode::Exclusive);
         builder.setFormatConversionAllowed(true);
-//        builder.setFormat(oboe::AudioFormat::Float);
         builder.setSampleRateConversionQuality(SampleRateConversionQuality::Best);
 
         Result result = builder.openStream(mAudioStream);
@@ -137,7 +134,8 @@ namespace iolib {
         // Reduce stream latency by setting the buffer size to a multiple of the burst size
         // Note: this will fail with ErrorUnimplemented if we are using a callback with OpenSL ES
         // See oboe::AudioStreamBuffered::setBufferSizeInFrames
-        result = mAudioStream->setBufferSizeInFrames(mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
+        result = mAudioStream->setBufferSizeInFrames(
+                mAudioStream->getFramesPerBurst() * kBufferSizeInBursts);
         if (result != Result::OK) {
             __android_log_print(
                     ANDROID_LOG_WARN,
@@ -186,7 +184,6 @@ namespace iolib {
 
     void SimpleMultiPlayer::addSampleSource(SampleSource *source, SampleBuffer *buffer) {
         buffer->resampleData(mSampleRate);
-        buffer->changeBPM(0.7f);
 
         mSampleBuffers.push_back(buffer);
         mSampleSources.push_back(source);
