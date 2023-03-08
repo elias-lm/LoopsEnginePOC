@@ -56,7 +56,6 @@ namespace iolib {
 
             if (masterIndex == index) {
                 masterFrame = pSource->getCurrentFrame();
-                masterMaxFrames = pSource->getMaxFrames();
             }
 
             //mix all the samples
@@ -89,6 +88,7 @@ namespace iolib {
             if (pSource->isPlaying()) {
                 if (pSource->getMaxFrames() > masterMaxFrames) {
                     masterIndex = index;
+                    masterMaxFrames = pSource->getMaxFrames();
                 }
             }
         }
